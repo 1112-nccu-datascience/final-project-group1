@@ -10,7 +10,7 @@ The goals of this project.
 ## Quick start
 You might provide an example commend or few commends to reproduce your analysis, i.e., the following R script
 ```R
-Rscript code/your_script.R --input data/training --output results/performance.tsv
+Rscript code/final.R --input data/training --output results/performance.tsv
 ```
 
 ## Folder organization and its related description
@@ -23,7 +23,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 
 ### data
 * Input
-  * Source
+  * Source : kaggle https://www.kaggle.com/c/santander-customer-satisfaction
   * Format
   * Size 
 * Output
