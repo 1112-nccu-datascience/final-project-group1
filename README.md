@@ -4,8 +4,8 @@ The goals of this project.
 ## Contributors
 |組員|系級|學號|工作分配|
 |-|-|-|-|
-|顧以恩|統計三|09304033|| 
-|   |   |xxxxxxxxx||
+|顧以恩|統計三|109304033|| 
+|   |   |||
 
 ## Quick start
 You might provide an example commend or few commends to reproduce your analysis, i.e., the following R script
