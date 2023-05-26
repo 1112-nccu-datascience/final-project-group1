@@ -1,4 +1,4 @@
-# [GroupID] your projrct title
+# [Group1] your projrct title
 The goals of this project.
 
 ## Contributors
