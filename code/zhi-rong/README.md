@@ -44,7 +44,15 @@ Public: 0.81264
 Private: 0.81994
 Public: 0.83188
 
-* add cross validation
+* add cross validation, the code is at xgb_V1.R
 Private: 0.82122
 Public: 0.83489
 
+* Using caret to to hyperparameter tuning, the code is at xgb_V2.R
+(The Score is already better then To the topV3)
+Private: 0.82657
+Public: 0.83819
+
+* xgb_V3.R, Not better then xgb_V2.R
+Private: 0.82337
+Public: 0.83896

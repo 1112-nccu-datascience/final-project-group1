@@ -1,11 +1,15 @@
+# * add cross validation
+# Private: 0.82122
+# Public: 0.83489
+
 library(tidyverse)
 library(xgboost)
-library(caret)
 
 set.seed(123)
 
 train <- read.csv("./data/Input/train.csv")
 test  <- read.csv("./data/Input/test.csv")
+
 
 ##### Removing IDs
 train$ID <- NULL
@@ -60,14 +64,14 @@ test <- test[, feature.names]
 
 train <- train %>%
     # This column mark the most common value
-    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0),) %>%
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
     
     # This column will be normal distributed
     mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
 
 test <- test %>%
     # This column mark the most common value
-    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0),) %>%
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
     
     # This column will be normal distributed
     mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
@@ -119,83 +123,55 @@ for (f in colnames(train)) {
 
 
 ##### Model Tuning
-train$TARGET <- train.y
-train <- train %>% 
-    mutate(
-        TARGET = as.factor(ifelse(TARGET == 1, "y", "n")),
-    )
+dtrain <- xgb.DMatrix(data = as.matrix(train), label = as.numeric(train.y))
+dtest <- xgb.DMatrix(data = as.matrix(test))
 
-trctrl <- trainControl(
-    method = "cv", 
-    number = 5,
-    search = "grid",
-    classProbs = TRUE,
+params <- list(
+    max_depth = 6,
+    eta = 0.3,
+    gamma = 0,
+    min_child_weight = 1,
+    subsample = 1,
+    
+    booster = "gbtree",
+    objective = "binary:logistic",
+    eval_metric = "auc",
+    verbosity = 0
 )
 
-tune_grid <- expand.grid(
-    nrounds = 200,
-    max_depth = 5,
-    eta = 0.05,
-    gamma = 0.01,
-    colsample_bytree = 0.75,
-    min_child_weight = 0,
-    subsample = 0.5
+xgbCV <- xgb.cv(
+    params = params,
+    data = dtrain,
+    nrounds = 100,
+    prediction = TRUE,
+    showsd = TRUE,
+    early_stopping_rounds = 10,
+    maximize = TRUE,
+    nfold = 10,
+    stratified = TRUE
 )
 
-fit <- caret::train(
-    TARGET ~ .,
-    data = train,
-    method = "xgbTree",
-    trControl = trctrl,
-    tuneGrid = tune_grid,
+numrounds <- min(which(
+    xgbCV$evaluation_log$test_auc_mean ==
+        max(xgbCV$evaluation_log$test_auc_mean)
+))
+
+model <- xgb.train(
+    params = params,
+    data = dtrain,
+    nrounds = numrounds
 )
 
-preds <- predict(fit, test, type = "prob")
-preds <- preds[, 2]
+preds <- predict(model, dtest)
 
-############################# Post processing
-tc <- test
-nv = tc['num_var33']+tc['saldo_medio_var33_ult3']+tc['saldo_medio_var44_hace2']+tc['saldo_medio_var44_hace3']+
-    tc['saldo_medio_var33_ult1']+tc['saldo_medio_var44_ult1']
+mat <- xgb.importance (feature_names = colnames(train), model = model)
+xgb.plot.importance (importance_matrix = mat[1:20])
 
-preds[nv > 0] = 0
-preds[tc['var15'] < 23] = 0
-preds[tc['saldo_medio_var5_hace2'] > 160000] = 0
-preds[tc['saldo_var33'] > 0] = 0
-preds[tc['var38'] > 3988596] = 0
-preds[tc['var21'] > 7500] = 0
-preds[tc['num_var30'] > 9] = 0
-preds[tc['num_var13_0'] > 6] = 0
-preds[tc['num_var33_0'] > 0] = 0
-preds[tc['imp_ent_var16_ult1'] > 51003] = 0
-preds[tc['imp_op_var39_comer_ult3'] > 13184] = 0
-preds[tc['saldo_medio_var5_ult3'] > 108251] = 0
-preds[tc['num_var37_0'] > 45] = 0
-preds[tc['saldo_var5'] > 137615] = 0
-preds[tc['saldo_var8'] > 60099] = 0
-preds[(tc['var15']+tc['num_var45_hace3']+tc['num_var45_ult3']+tc['var36']) <= 24] = 0
-preds[tc['saldo_var14'] > 19053.78] = 0
-preds[tc['saldo_var17'] > 288188.97] = 0
-preds[tc['saldo_var26'] > 10381.29] = 0
-preds[tc['num_var13_largo_0'] > 3] = 0
-preds[tc['imp_op_var40_comer_ult1'] > 3639.87] = 0
-preds[tc['num_var5_0'] > 6] = 0
-preds[tc['saldo_medio_var13_largo_ult1'] > 0] = 0
-preds[tc['num_meses_var13_largo_ult3'] > 0] = 0
-preds[tc['num_var20_0'] > 0] = 0  
-preds[tc['saldo_var13_largo'] > 150000] = 0
-preds[tc['num_var17_0'] > 21] = 0
-preds[tc['num_var24_0'] > 3] = 0
-preds[tc['num_var26_0'] > 12] = 0
-preds[tc['num_op_var40_hace2'] > 12] = 0
-
-#############################
-
-predict_df <- data_frame(Id = test.id, TARGET = preds)
+predict_df <- data.frame(ID = test.id, TARGET = preds)
 
 write.csv(
     predict_df,
-    file = './data/Output/submission_caret_CV.csv',
+    file = './data/Output/submission_CV.csv',
     quote = FALSE,
     row.names = FALSE
 )

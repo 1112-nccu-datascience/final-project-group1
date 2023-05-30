@@ -1,3 +1,7 @@
+# * xgb_V3.R, Not better then xgb_V2.R
+# Private: 0.82337
+# Public: 0.83896
+
 library(tidyverse)
 library(xgboost)
 library(caret)
@@ -195,7 +199,7 @@ predict_df <- data_frame(Id = test.id, TARGET = preds)
 
 write.csv(
     predict_df,
-    file = './data/Output/submission_caret_CV.csv',
+    file = './data/Output/submission_caret_postProcess.csv',
     quote = FALSE,
     row.names = FALSE
 )
