@@ -1,11 +1,11 @@
-# In case i forget, this is the base template of " To the topV3"
-
+library(tidyverse)
 library(xgboost)
-library(Matrix)
+
+set.seed(123)
 
 train <- read.csv("./data/Input/train.csv")
 test  <- read.csv("./data/Input/test.csv")
-cat('Length: ', nrow(train))
+
 
 ##### Removing IDs
 train$ID <- NULL
@@ -18,10 +18,10 @@ train$TARGET <- NULL
 
 ##### 0 count per line
 count0 <- function(x) {
-    return( sum(x == 0) )
+    return(sum(x == 0))
 }
-train$n0 <- apply(train, 1, FUN=count0)
-test$n0 <- apply(test, 1, FUN=count0)
+train$n0 <- apply(train, 1, FUN = count0)
+test$n0 <- apply(test, 1, FUN = count0)
 
 ##### Removing constant features
 cat("\n## Removing the constants features.\n")
@@ -36,7 +36,7 @@ for (f in names(train)) {
 ##### Removing identical features
 features_pair <- combn(names(train), 2, simplify = F)
 toRemove <- c()
-for(pair in features_pair) {
+for (pair in features_pair) {
     f1 <- pair[1]
     f2 <- pair[2]
     
@@ -50,101 +50,124 @@ for(pair in features_pair) {
 
 feature.names <- setdiff(names(train), toRemove)
 
-train$var38 <- log(train$var38)
-test$var38 <- log(test$var38)
-
 train <- train[, feature.names]
 test <- test[, feature.names]
-tc <- test
 
-#---limit vars in test based on min and max vals of train
-print('Setting min-max lims on test data')
-for(f in colnames(train)){
-    lim <- min(train[,f])
-    test[test[,f]<lim,f] <- lim
+
+# Create additional features
+# var38mc == 1 when var38 has the most common value and 0 otherwise
+# logvar38 is log transformed feature when var38mc is 0, zero otherwise
+
+train <- train %>%
+    # This column mark the most common value
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
     
-    lim <- max(train[,f])
-    test[test[,f]>lim,f] <- lim  
+    # This column will be normal distributed
+    mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
+
+test <- test %>%
+    # This column mark the most common value
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
+    
+    # This column will be normal distributed
+    mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
+
+
+# add log_saldo_var30
+train$log_saldo_var30 <- train$saldo_var30
+
+smallest_positive_value <-
+    min(train$log_saldo_var30[train$log_saldo_var30 > 0], na.rm = TRUE)
+
+# remove negitive values
+train$log_saldo_var30[train$log_saldo_var30 < smallest_positive_value] <-
+    smallest_positive_value
+
+train <- train %>%
+    mutate(log_saldo_var30 = ifelse(
+        log_saldo_var30 > smallest_positive_value,
+        log(log_saldo_var30),
+        0
+    ))
+
+
+test$log_saldo_var30 <- test$saldo_var30
+
+smallest_positive_value <-
+    min(test$log_saldo_var30[test$log_saldo_var30 > 0], na.rm = TRUE)
+
+# remove negitive values
+test$log_saldo_var30[test$log_saldo_var30 < smallest_positive_value] <-
+    smallest_positive_value
+
+test <- test %>%
+    mutate(log_saldo_var30 = ifelse(
+        log_saldo_var30 > smallest_positive_value,
+        log(log_saldo_var30),
+        0
+    ))
+
+##### limit vars in test based on min and max vals of train (Remove Outlier)
+print('Setting min-max lims on test data')
+for (f in colnames(train)) {
+    lim <- min(train[, f])
+    test[test[, f] < lim, f] <- lim
+    
+    lim <- max(train[, f])
+    test[test[, f] > lim, f] <- lim
 }
-#---
-
-train$TARGET <- train.y
 
 
-train <- sparse.model.matrix(TARGET ~ ., data = train)
+##### Model Tuning
+dtrain <- xgb.DMatrix(data = as.matrix(train), label = as.numeric(train.y))
+dtest <- xgb.DMatrix(data = as.matrix(test))
 
-dtrain <- xgb.DMatrix(data=train, label=train.y)
-watchlist <- list(train=dtrain)
+params <- list(
+    max_depth = 6,
+    eta = 0.3,
+    gamma = 0,
+    min_child_weight = 1,
+    subsample = 1,
 
-param <- list(  objective           = "binary:logistic", 
-                booster             = "gbtree",
-                eval_metric         = "auc",
-                eta                 = 0.0202048,
-                max_depth           = 5,
-                subsample           = 0.6815,
-                colsample_bytree    = 0.701
+    booster = "gbtree",
+    objective = "binary:logistic",
+    eval_metric = "auc",
+    verbosity = 0
 )
 
-clf <- xgb.train(   params              = param, 
-                    data                = dtrain, 
-                    nrounds             = 560, 
-                    verbose             = 1,
-                    watchlist           = watchlist,
-                    maximize            = FALSE
+xgbCV <- xgb.cv(
+    params = params,
+    data = dtrain,
+    nrounds = 100,
+    prediction = TRUE,
+    showsd = TRUE,
+    early_stopping_rounds = 10,
+    maximize = TRUE,
+    nfold = 10,
+    stratified = TRUE
 )
 
+numrounds <- min(which(
+    xgbCV$evaluation_log$test_auc_mean ==
+        max(xgbCV$evaluation_log$test_auc_mean)
+))
 
-#######actual variables
+model <- xgb.train(
+    params = params,
+    data = dtrain,
+    nrounds = numrounds
+)
 
-feature.names
+preds <- predict(model, dtest)
 
-test$TARGET <- -1
+mat <- xgb.importance (feature_names = colnames(train), model = model)
+xgb.plot.importance (importance_matrix = mat[1:20])
 
-test <- sparse.model.matrix(TARGET ~ ., data = test)
+predict_df <- data.frame(ID = test.id, TARGET = preds)
 
-preds <- predict(clf, test)
-pred <-predict(clf,train)
-AUC<-function(actual,predicted)
-{
-    library(pROC)
-    auc<-auc(as.numeric(actual),as.numeric(predicted))
-    auc 
-}
-AUC(train.y,pred) ##AUC
-
-nv = tc['num_var33']+tc['saldo_medio_var33_ult3']+tc['saldo_medio_var44_hace2']+tc['saldo_medio_var44_hace3']+
-    tc['saldo_medio_var33_ult1']+tc['saldo_medio_var44_ult1']
-
-preds[nv > 0] = 0
-preds[tc['var15'] < 23] = 0
-preds[tc['saldo_medio_var5_hace2'] > 160000] = 0
-preds[tc['saldo_var33'] > 0] = 0
-preds[tc['var38'] > 3988596] = 0
-preds[tc['var21'] > 7500] = 0
-preds[tc['num_var30'] > 9] = 0
-preds[tc['num_var13_0'] > 6] = 0
-preds[tc['num_var33_0'] > 0] = 0
-preds[tc['imp_ent_var16_ult1'] > 51003] = 0
-preds[tc['imp_op_var39_comer_ult3'] > 13184] = 0
-preds[tc['saldo_medio_var5_ult3'] > 108251] = 0
-preds[tc['num_var37_0'] > 45] = 0
-preds[tc['saldo_var5'] > 137615] = 0
-preds[tc['saldo_var8'] > 60099] = 0
-preds[(tc['var15']+tc['num_var45_hace3']+tc['num_var45_ult3']+tc['var36']) <= 24] = 0
-preds[tc['saldo_var14'] > 19053.78] = 0
-preds[tc['saldo_var17'] > 288188.97] = 0
-preds[tc['saldo_var26'] > 10381.29] = 0
-preds[tc['num_var13_largo_0'] > 3] = 0
-preds[tc['imp_op_var40_comer_ult1'] > 3639.87] = 0
-preds[tc['num_var5_0'] > 6] = 0
-preds[tc['saldo_medio_var13_largo_ult1'] > 0] = 0
-preds[tc['num_meses_var13_largo_ult3'] > 0] = 0
-preds[tc['num_var20_0'] > 0] = 0  
-preds[tc['saldo_var13_largo'] > 150000] = 0
-preds[tc['num_var17_0'] > 21] = 0
-preds[tc['num_var24_0'] > 3] = 0
-preds[tc['num_var26_0'] > 12] = 0
-preds[tc['num_op_var40_hace2'] > 12] = 0
-
-
-submission <- data.frame(ID=test.id, TARGET=preds)
+write.csv(
+    predict_df,
+    file = './data/Output/submission_CV.csv',
+    quote = FALSE,
+    row.names = FALSE
+)

@@ -22,3 +22,29 @@ To improve the performance of "To the TOP v3"
 * Trying to PCA & Chi2 feature selection
 * Trying Other Predicting models
 * Ensemble the Predictions
+
+### experiment score record
+* To the topV3
+Private: 0.82451
+Public: 0.84116
+
+* Guess all 0 (null model)
+Private: 0.5 
+Public: 0.5
+
+* Without any preprocess, use all features to predict. Model use xgboost.
+Private: 0.81965
+Public: 0.83217
+
+* Without feature selection, Using only PCA to reduce the dimention to 100 + xgboost
+Private: 0.79923
+Public: 0.81264
+
+* add logvar38, var28mc, log_saldo_var30 and basic data cleaning + xgboost (No PCA)
+Private: 0.81994
+Public: 0.83188
+
+* add cross validation
+Private: 0.82122
+Public: 0.83489
+
