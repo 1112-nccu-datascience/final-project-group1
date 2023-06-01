@@ -6,6 +6,7 @@ The goals of this project.
 |-|-|-|-|
 |顧以恩|統計三|109304033|| 
 |程至榮|資碩一|111753151||
+|高語謙|資碩一|111753130||
 
 ## Quick start
 You might provide an example commend or few commends to reproduce your analysis, i.e., the following R script
@@ -23,7 +24,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 
 ### data
 * Input
-  * Source : kaggle https://www.kaggle.com/c/santander-customer-satisfaction
+  * Source : kaggle: [Santander Customer Satisfaction](https://www.kaggle.com/c/santander-customer-satisfaction)
   * Format
   * Size 
 * Output
