@@ -25,10 +25,10 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 ### data
 * Input
   * Source : kaggle [Santander Customer Satisfaction](https://www.kaggle.com/c/santander-customer-satisfaction)
-  * `train.csv` -  the training set including the TARGET
+  * `train.csv`
     * (row) 76020 customers x (column) 371 features, 59.36 MB
-  * `test.csv` - the test set without the target
-    * (row) 75818 customers x (column) 371 features, 59.05 MB
+  * `test.csv`
+    * (row) 75818 customers x (column) 370 features, 59.05 MB
 * Output
 
 ### code
