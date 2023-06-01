@@ -26,8 +26,8 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 * Input
   * Source : kaggle [Santander Customer Satisfaction](https://www.kaggle.com/c/santander-customer-satisfaction)
   * Format
-   * `train.csv`
-   * `test.csv`
+    * `train.csv`
+    * `test.csv`
   * Size 
 * Output
 
