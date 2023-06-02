@@ -1,15 +1,15 @@
-# * add cross validation
-# Private: 0.82122
-# Public: 0.83489
+# 跑不出來
+# Private: 
+# Public: 
 
 library(tidyverse)
-library(xgboost)
+library(ROSE)   # For oversampling the minority class
+library(caret)  # For Classification And Regression Training
 
 set.seed(123)
 
 train <- read.csv("./data/Input/train.csv")
 test  <- read.csv("./data/Input/test.csv")
-
 
 ##### Removing IDs
 train$ID <- NULL
@@ -64,14 +64,14 @@ test <- test[, feature.names]
 
 train <- train %>%
     # This column mark the most common value
-    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0),) %>%
     
     # This column will be normal distributed
     mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
 
 test <- test %>%
     # This column mark the most common value
-    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0),) %>%
     
     # This column will be normal distributed
     mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
@@ -121,57 +121,53 @@ for (f in colnames(train)) {
     test[test[, f] > lim, f] <- lim
 }
 
+train$TARGET <- train.y
+train <- train %>% 
+    mutate(
+        TARGET = as.factor(ifelse(TARGET == 1, "y", "n")),
+    )
+
+# Balancing classes using oversampling
+oversampling <- function(origin_data) {
+    new_data <- ROSE(TARGET ~ ., data = origin_data)$data
+    return(new_data)
+}
+
+train <- train %>% oversampling()
 
 ##### Model Tuning
-dtrain <- xgb.DMatrix(data = as.matrix(train), label = as.numeric(train.y))
-dtest <- xgb.DMatrix(data = as.matrix(test))
-
-params <- list(
-    max_depth = 6,
-    eta = 0.3,
-    gamma = 0,
-    min_child_weight = 1,
-    subsample = 1,
-    
-    booster = "gbtree",
-    objective = "binary:logistic",
-    eval_metric = "auc",
-    verbosity = 0
+trctrl <- trainControl(
+    method = "cv",
+    number = 5,
+    search = "grid",
+    classProbs = TRUE,
+    summaryFunction = prSummary,
 )
 
-xgbCV <- xgb.cv(
-    params = params,
-    data = dtrain,
-    nrounds = 100,
-    prediction = TRUE,
-    showsd = TRUE,
-    early_stopping_rounds = 10,
-    maximize = TRUE,
-    nfold = 10,
-    stratified = TRUE
+tune_grid <- expand.grid(
+    usekernel = c(TRUE, FALSE),
+    fL = c(0.1), # Laplace smoothing
+    adjust = c(0.5)
 )
 
-numrounds <- min(which(
-    xgbCV$evaluation_log$test_auc_mean ==
-        max(xgbCV$evaluation_log$test_auc_mean)
-))
-
-model <- xgb.train(
-    params = params,
-    data = dtrain,
-    nrounds = numrounds
+fit <- caret::train(
+    TARGET ~ .,
+    data = train,
+    method = "nb",
+    metric = "F",
+    tuneGrid = tune_grid,
+    trControl = trctrl,
+    verbose = TRUE,
 )
 
-preds <- predict(model, dtest)
+preds <- predict(fit, test, type = "prob")
+pred_prob_y <- preds[, 2]
 
-mat <- xgb.importance (feature_names = colnames(train), model = model)
-xgb.plot.importance (importance_matrix = mat[1:20])
+predict_df <- data_frame(Id = test.id, TARGET = pred_prob_y)
 
-# predict_df <- data.frame(ID = test.id, TARGET = preds)
-# 
-# write.csv(
-#     predict_df,
-#     file = './data/Output/submission_CV.csv',
-#     quote = FALSE,
-#     row.names = FALSE
-# )
+write.csv(
+    predict_df,
+    file = './data/Output/submission_nb_V1.csv',
+    quote = FALSE,
+    row.names = FALSE
+)

@@ -1,9 +1,12 @@
 # * add cross validation
-# Private: 0.82122
-# Public: 0.83489
+# Private: 0.8243
+# Public: 0.83772
 
 library(tidyverse)
 library(xgboost)
+library(caret)
+library(ROCR)
+library(ParBayesianOptimization)
 
 set.seed(123)
 
@@ -121,18 +124,17 @@ for (f in colnames(train)) {
     test[test[, f] > lim, f] <- lim
 }
 
-
 ##### Model Tuning
 dtrain <- xgb.DMatrix(data = as.matrix(train), label = as.numeric(train.y))
 dtest <- xgb.DMatrix(data = as.matrix(test))
 
 params <- list(
-    max_depth = 6,
-    eta = 0.3,
-    gamma = 0,
-    min_child_weight = 1,
-    subsample = 1,
-    
+    max_depth = 5,
+    eta = 0.05,
+    gamma = 0.01,
+    min_child_weight = 0,
+    subsample = 0.5,
+    colsample_bytree=0.75,
     booster = "gbtree",
     objective = "binary:logistic",
     eval_metric = "auc",
@@ -151,15 +153,13 @@ xgbCV <- xgb.cv(
     stratified = TRUE
 )
 
-numrounds <- min(which(
-    xgbCV$evaluation_log$test_auc_mean ==
-        max(xgbCV$evaluation_log$test_auc_mean)
-))
+
+cat(xgbCV$best_iteration)
 
 model <- xgb.train(
     params = params,
     data = dtrain,
-    nrounds = numrounds
+    nrounds = xgbCV$best_iteration
 )
 
 preds <- predict(model, dtest)
@@ -167,11 +167,12 @@ preds <- predict(model, dtest)
 mat <- xgb.importance (feature_names = colnames(train), model = model)
 xgb.plot.importance (importance_matrix = mat[1:20])
 
-# predict_df <- data.frame(ID = test.id, TARGET = preds)
-# 
-# write.csv(
-#     predict_df,
-#     file = './data/Output/submission_CV.csv',
-#     quote = FALSE,
-#     row.names = FALSE
-# )
+
+predict_df <- data.frame(ID = test.id, TARGET = preds)
+
+write.csv(
+    predict_df,
+    file = './data/Output/submission_xgb_V5.csv',
+    quote = FALSE,
+    row.names = FALSE
+)
