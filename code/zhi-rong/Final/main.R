@@ -156,7 +156,7 @@ fit <- caret::train(
 
 ##### Evaluation:Confusion Matrix for training set
 train_evl <- predict(fit,train,type="prob")
-train_preds <- as.factor(ifelse(train_evl[, 2] > 0.4, "y", "n"))
+train_preds <- as.factor(ifelse(train_evl[, 2] > 0.5, "y", "n"))
 confusion_matrix <- confusionMatrix(train_preds, train$TARGET)
 print(confusion_matrix)
 
