@@ -1,18 +1,15 @@
-# * add cross validation
-# Private: 0.8243
-# Public: 0.83772
+# (The Score is already better then To the topV3)
+# Private: 0.82657
+# Public: 0.83819
 
 library(tidyverse)
 library(xgboost)
 library(caret)
-library(ROCR)
-library(ParBayesianOptimization)
 
 set.seed(123)
 
 train <- read.csv("./data/Input/train.csv")
 test  <- read.csv("./data/Input/test.csv")
-
 
 ##### Removing IDs
 train$ID <- NULL
@@ -67,14 +64,14 @@ test <- test[, feature.names]
 
 train <- train %>%
     # This column mark the most common value
-    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0),) %>%
     
     # This column will be normal distributed
     mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
 
 test <- test %>%
     # This column mark the most common value
-    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0),) %>%
     
     # This column will be normal distributed
     mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
@@ -124,55 +121,47 @@ for (f in colnames(train)) {
     test[test[, f] > lim, f] <- lim
 }
 
-##### Model Tuning
-dtrain <- xgb.DMatrix(data = as.matrix(train), label = as.numeric(train.y))
-dtest <- xgb.DMatrix(data = as.matrix(test))
 
-params <- list(
+##### Model Tuning
+train$TARGET <- train.y
+train <- train %>% 
+    mutate(
+        TARGET = as.factor(ifelse(TARGET == 1, "y", "n")),
+    )
+
+trctrl <- trainControl(
+    method = "cv", 
+    number = 5,
+    search = "grid",
+    classProbs = TRUE,
+)
+
+tune_grid <- expand.grid(
+    nrounds = 200,
     max_depth = 5,
     eta = 0.05,
     gamma = 0.01,
+    colsample_bytree = 0.75,
     min_child_weight = 0,
-    subsample = 0.5,
-    colsample_bytree=0.75,
-    booster = "gbtree",
-    objective = "binary:logistic",
-    eval_metric = "auc",
-    verbosity = 0
+    subsample = 0.5
 )
 
-xgbCV <- xgb.cv(
-    params = params,
-    data = dtrain,
-    nrounds = 100,
-    prediction = TRUE,
-    showsd = TRUE,
-    early_stopping_rounds = 10,
-    maximize = TRUE,
-    nfold = 10,
-    stratified = TRUE
+fit <- caret::train(
+    TARGET ~ .,
+    data = train,
+    method = "xgbTree",
+    trControl = trctrl,
+    tuneGrid = tune_grid,
 )
 
+preds <- predict(fit, test, type = "prob")
+pred_prob_y <- preds[, 2]
 
-cat(xgbCV$best_iteration)
-
-model <- xgb.train(
-    params = params,
-    data = dtrain,
-    nrounds = xgbCV$best_iteration
-)
-
-preds <- predict(model, dtest)
-
-mat <- xgb.importance (feature_names = colnames(train), model = model)
-xgb.plot.importance (importance_matrix = mat[1:20])
-
-
-predict_df <- data.frame(ID = test.id, TARGET = preds)
+predict_df <- data_frame(Id = test.id, TARGET = pred_prob_y)
 
 write.csv(
     predict_df,
-    file = './data/Output/submission_xgb_V5.csv',
+    file = './data/Output/submission_xgb_v2.csv',
     quote = FALSE,
     row.names = FALSE
 )

@@ -161,7 +161,7 @@ predict_df <- data_frame(Id = test.id, TARGET = pred_prob_y)
 
 write.csv(
     predict_df,
-    file = './data/Output/submission_caret_CV.csv',
+    file = './data/Output/submission_xgb_v2.csv',
     quote = FALSE,
     row.names = FALSE
 )

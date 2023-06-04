@@ -1,15 +1,18 @@
-# Add PCA
-# Private: 0.81518
-# Public: 0.82969
+# * add cross validation
+# Private: 0.8243
+# Public: 0.83772
 
 library(tidyverse)
 library(xgboost)
 library(caret)
+library(ROCR)
+library(ParBayesianOptimization)
 
 set.seed(123)
 
 train <- read.csv("./data/Input/train.csv")
 test  <- read.csv("./data/Input/test.csv")
+
 
 ##### Removing IDs
 train$ID <- NULL
@@ -64,14 +67,14 @@ test <- test[, feature.names]
 
 train <- train %>%
     # This column mark the most common value
-    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0),) %>%
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
     
     # This column will be normal distributed
     mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
 
 test <- test %>%
     # This column mark the most common value
-    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0),) %>%
+    mutate(var38mc = ifelse(near(var38, 117310.979016494), 1, 0), ) %>%
     
     # This column will be normal distributed
     mutate (logvar38 = ifelse(var38mc == 0, log(var38), 0))
@@ -121,64 +124,58 @@ for (f in colnames(train)) {
     test[test[, f] > lim, f] <- lim
 }
 
-
-## PCA
-st.pca <- prcomp(train, center = TRUE, scale. = TRUE)
-st.pca.pred <- predict(st.pca, test)
-
-# show variance explained (first 10)
-st.summary <- summary(st.pca)
-st.summary$importance[2, 1:10]
-
-# We need at least 100 PC too explain about 95% of variance
-sum(st.summary$importance[2, 1:200])
-
-train <- as.data.frame(st.pca$x[,1:200])
-test <- as.data.frame(st.pca.pred[,1:200])
-
-### PCA end
-
-
 ##### Model Tuning
-train$TARGET <- train.y
-train <- train %>% 
-    mutate(
-        TARGET = as.factor(ifelse(TARGET == 1, "y", "n")),
-    )
+dtrain <- xgb.DMatrix(data = as.matrix(train), label = as.numeric(train.y))
+dtest <- xgb.DMatrix(data = as.matrix(test))
 
-trctrl <- trainControl(
-    method = "cv", 
-    number = 5,
-    search = "grid",
-    classProbs = TRUE,
-)
-
-tune_grid <- expand.grid(
-    nrounds = 200,
+params <- list(
     max_depth = 5,
     eta = 0.05,
     gamma = 0.01,
-    colsample_bytree = 0.75,
     min_child_weight = 0,
-    subsample = 0.5
+    subsample = 0.5,
+    colsample_bytree=0.75,
+    booster = "gbtree",
+    objective = "binary:logistic",
+    eval_metric = "auc",
+    verbosity = 0
 )
 
-fit <- caret::train(
-    TARGET ~ .,
-    data = train,
-    method = "xgbTree",
-    trControl = trctrl,
-    tuneGrid = tune_grid,
+# xgboost 內建的 Cross Validation
+xgbCV <- xgb.cv(
+    params = params,
+    data = dtrain,
+    nrounds = 100,
+    prediction = TRUE,
+    showsd = TRUE,
+    early_stopping_rounds = 10,
+    maximize = TRUE,
+    nfold = 10,
+    stratified = TRUE
 )
 
-preds <- predict(fit, test, type = "prob")
-pred_prob_y <- preds[, 2]
+cat(xgbCV$best_iteration)
 
-predict_df <- data_frame(Id = test.id, TARGET = pred_prob_y)
+# 訓練模型
+model <- xgb.train(
+    params = params,
+    data = dtrain,
+    nrounds = xgbCV$best_iteration
+)
+
+preds <- predict(model, dtest)
+
+# 可以印出哪些 features 對 xgboost 是重要的，取前 20 名
+mat <- xgb.importance (feature_names = colnames(train), model = model)
+xgb.plot.importance (importance_matrix = mat[1:20])
+
+
+# 預測
+predict_df <- data.frame(ID = test.id, TARGET = preds)
 
 write.csv(
     predict_df,
-    file = './data/Output/submission_xgb_V4.csv',
+    file = './data/Output/submission_xgb_V5.csv',
     quote = FALSE,
     row.names = FALSE
 )

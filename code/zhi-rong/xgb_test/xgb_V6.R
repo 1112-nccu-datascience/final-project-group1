@@ -1,10 +1,10 @@
-# 跑不出來
-# Private: 
-# Public: 
+# Hyper Parameter
+# Private: 0.81518
+# Public: 0.82969
 
 library(tidyverse)
-library(ROSE)   # For oversampling the minority class
-library(caret)  # For Classification And Regression Training
+library(xgboost)
+library(caret)
 
 set.seed(123)
 
@@ -121,43 +121,39 @@ for (f in colnames(train)) {
     test[test[, f] > lim, f] <- lim
 }
 
+##### Model Tuning
 train$TARGET <- train.y
 train <- train %>% 
     mutate(
         TARGET = as.factor(ifelse(TARGET == 1, "y", "n")),
     )
 
-# Balancing classes using oversampling
-oversampling <- function(origin_data) {
-    new_data <- ROSE(TARGET ~ ., data = origin_data)$data
-    return(new_data)
-}
-
-train <- train %>% oversampling()
-
-##### Model Tuning
 trctrl <- trainControl(
-    method = "cv",
+    method = "cv", 
     number = 5,
     search = "grid",
     classProbs = TRUE,
-    summaryFunction = prSummary,
+    allowParallel = TRUE
 )
 
 tune_grid <- expand.grid(
-    usekernel = c(TRUE, FALSE),
-    fL = c(0.1), # Laplace smoothing
-    adjust = c(0.5)
+    nrounds = 200,
+    max_depth = 5,
+    eta = 0.05,
+    gamma = 0.01,
+    colsample_bytree = 0.75,
+    min_child_weight = 0,
+    subsample = 0.5
 )
+
 
 fit <- caret::train(
     TARGET ~ .,
     data = train,
-    method = "nb",
-    metric = "F",
-    tuneGrid = tune_grid,
+    method = "xgbTree",
     trControl = trctrl,
-    verbose = TRUE,
+    tuneGrid = tune_grid,
+    verbosity = 0
 )
 
 preds <- predict(fit, test, type = "prob")
@@ -165,9 +161,15 @@ pred_prob_y <- preds[, 2]
 
 predict_df <- data_frame(Id = test.id, TARGET = pred_prob_y)
 
+best_params <- fit$bestTune   # Best parameter settings
+best_model <- fit$finalModel  # Best model
+
+print(best_params)
+# print(best_model)
+
 write.csv(
     predict_df,
-    file = './data/Output/submission_nb_V1.csv',
+    file = './data/Output/submission_xgb_V6.csv',
     quote = FALSE,
     row.names = FALSE
 )
