@@ -11,7 +11,7 @@ The goals of this project.
 ## Quick start
 You might provide an example commend or few commends to reproduce your analysis, i.e., the following R script
 ```R
-Rscript code/final.R --input data/training --output results/performance.tsv
+Rscript code/Final/main.R --train data/Input/train.csv --test data/Input/test.csv --predict data/Output/submission.csv
 ```
 
 ## Folder organization and its related description
