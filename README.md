@@ -1,6 +1,7 @@
 # [Group1] your projrct title
-The goals of this project.
-
+Our goals of this project:
+Customer satisfaction is a key measure of success. Unhappy customers don't stick around. What's more, unhappy customers rarely voice their dissatisfaction before leaving.
+In this competition, we want to predict if a customer is satisfied or dissatisfied with their banking experience.And this competition also enhances our ability to deal with hundreds of anonymized features.We would do lots of data prepocessings to select、create or remove the variables,so we can better predict and increace the accuracy.
 ## Contributors
 |組員|系級|學號|工作分配|
 |-|-|-|-|
