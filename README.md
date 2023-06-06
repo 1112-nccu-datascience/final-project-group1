@@ -41,4 +41,8 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 
 ## References
 * Packages you use
+* Features preprocessing
+ https://www.kaggle.com/code/cast42/exploring-features
+* xgboost code
+ https://www.kaggle.com/code/zfturbo/to-the-top-v3
 * Related publications
