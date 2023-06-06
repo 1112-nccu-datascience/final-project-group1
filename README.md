@@ -37,24 +37,31 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
     * (row) 75818 customers x (column) 2 features, 130 MB
 
 ### code
-* data preprocessing
-  * remove all zero features
-  * remove identical features
-  * remove constant features
-* create additional features
-  * var38mc、logvar38、log_saldo_var30 
-* remove outliers
-* model tuning
 * Analysis steps
+  * data preprocessing
+    * remove all zero features
+    * remove identical features
+    * remove constant features
+  * create additional features
+    * var38mc、logvar38、log_saldo_var30 
+  * remove outliers
+  * model tuning
+
 * Which method or package do you use? 
   * original packages in the paper
   * additional packages you found
+    * tidyverse、xgboost、caret
 
 ### results
 * What is a null model for comparison?
+  * Using xgboost without any modification as null model with 0.81 accuracy
 * How do your perform evaluation?
-  * Cross-validation, or extra separated data
+  * Cross-validation : 10 fold in xgboost parameter
+  * or extra separated data
 
 ## References
 * Packages you use
+  * tidyverse: https://www.tidyverse.org/
+  * xgboost: https://xgboost.readthedocs.io/en/stable/
+  * caret: https://cran.r-project.org/web/packages/caret/index.html
 * Related publications
