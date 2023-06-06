@@ -33,7 +33,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   * `test.csv`
     * (row) 75818 customers x (column) 370 features, 59.05 MB
 * Output
-  * 'submission.csv'
+  * `submission.csv`
     * (row) 75818 customers x (column) 2 features, 130 MB
 
 ### code
