@@ -4,9 +4,12 @@ The goals of this project.
 ## Contributors
 |組員|系級|學號|工作分配|
 |-|-|-|-|
-|顧以恩|統計三|109304033|| 
+|顧以恩|統計三|109304033||
+|張翊鞍|統計四|108304004||
 |程至榮|資碩一|111753151||
 |高語謙|資碩一|111753130||
+|吳家瑋|資碩一|111753141||
+
 
 ## Quick start
 You might provide an example commend or few commends to reproduce your analysis, i.e., the following R script
@@ -30,8 +33,18 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   * `test.csv`
     * (row) 75818 customers x (column) 370 features, 59.05 MB
 * Output
+  * 'submission.csv'
+    * (row) 75818 customers x (column) 2 features, 130 MB
 
 ### code
+* data preprocessing
+  * remove all zero features
+  * remove identical features
+  * remove constant features
+* create additional features
+  * var38mc、logvar38、log_saldo_var30 
+* remove outliers
+* model tuning
 * Analysis steps
 * Which method or package do you use? 
   * original packages in the paper
