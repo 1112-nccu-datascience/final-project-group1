@@ -8,11 +8,11 @@ In this competition, we want to predict if a customer is satisfied or dissatisfi
 ## Contributors
 |組員|系級|學號|工作分配|
 |-|-|-|-|
-|顧以恩|統計三|109304033||
-|張翊鞍|統計四|108304004||
-|程至榮|資碩一|111753151||
-|高語謙|資碩一|111753130||
-|吳家瑋|資碩一|111753141||
+|顧以恩|統計三|109304033|實驗、poster|
+|張翊鞍|統計四|108304004|實驗、readme|
+|程至榮|資碩一|111753151|實驗、視覺化、簡報|
+|高語謙|資碩一|111753130|實驗、視覺化、簡報|
+|吳家瑋|資碩一|111753141|實驗、poster|
 
 ## Quick start
 The following R script shows how to execute the best xgboost model we have experimented and output the result to your designate directory. We have put the source code in `/code/Final` directory, including the main.R (Best model) and other experiment source code (like PCA, data exploration, etc.). Feel free to checkit
