@@ -8,7 +8,7 @@ In this competition, we want to predict if a customer is satisfied or dissatisfi
 ## Contributors
 |組員|系級|學號|工作分配|
 |-|-|-|-|
-|顧以恩|統計三|109304033|實驗、視覺化、poster、簡報|
+|顧以恩|統計三|109304033|實驗、視覺化、簡報|
 |張翊鞍|統計四|108304004|實驗、readme|
 |程至榮|資碩一|111753151|實驗、視覺化、簡報|
 |高語謙|資碩一|111753130|實驗、視覺化、簡報|
