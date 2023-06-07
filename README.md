@@ -65,8 +65,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   * tidyverse: https://www.tidyverse.org/
   * xgboost: https://xgboost.readthedocs.io/en/stable/
   * caret: https://cran.r-project.org/web/packages/caret/index.html
-* Related publications
- https://www.kaggle.com/code/cast42/exploring-features
-* xgboost code
- https://www.kaggle.com/code/zfturbo/to-the-top-v3
-* Related publications
+* Related publications: 
+  * https://www.kaggle.com/code/cast42/exploring-features
+  * https://www.kaggle.com/code/zfturbo/to-the-top-v3
+
