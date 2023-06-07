@@ -43,9 +43,9 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
     * (row) 75818 customers x (column) 370 features, 59.05 MB
     * 
 * Internal
-  * `Undeesampling50.csv`
+  * `Undersampling50.csv`
     *  (row) 6016 customers x (column) 370 features, 4.04 MB
-  * `Undeesampling20.csv`
+  * `Undersampling20.csv`
     *  (row) 15040 customers x (column) 370 features, 10.14 MB
 * Output
   * `submission.csv`
