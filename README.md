@@ -8,7 +8,7 @@ In this competition, we want to predict if a customer is satisfied or dissatisfi
 ## Contributors
 |組員|系級|學號|工作分配|
 |-|-|-|-|
-|顧以恩|統計三|109304033|實驗、poster|
+|顧以恩|統計三|109304033|實驗、視覺化、poster、簡報|
 |張翊鞍|統計四|108304004|實驗、readme|
 |程至榮|資碩一|111753151|實驗、視覺化、簡報|
 |高語謙|資碩一|111753130|實驗、視覺化、簡報|
@@ -41,11 +41,17 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
     * (row) 76020 customers x (column) 371 features, 59.36 MB
   * `test.csv`
     * (row) 75818 customers x (column) 370 features, 59.05 MB
+    * 
+* Internal
+  * `Undeesampling50.csv`
+    *  (row) 6016 customers x (column) 370 features, 4.04 MB
+  * `Undeesampling20.csv`
+    *  (row) 15040 customers x (column) 370 features, 10.14 MB
 * Output
   * `submission.csv`
-    * (row) 75818 customers x (column) 2 features, 130 MB
+    * (row) 75818 customers x (column) 2 features, 0.6 MB
   * `submission.csv`
-    * (row) 75818 customers x (column) 2 features, 130 MB
+    * (row) 75818 customers x (column) 2 features, 0.6 MB
 
 ### code
 * Analysis steps
