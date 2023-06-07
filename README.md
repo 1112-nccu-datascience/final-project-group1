@@ -78,7 +78,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   * original packages in the paper
   * additional packages you found
     * tidyverse、xgboost、caret
-    * tidyverse、xgboost、caret
+    * devtools、imbalance、pROC、DMwR
 
 ### results
 * What is a null model for comparison?
