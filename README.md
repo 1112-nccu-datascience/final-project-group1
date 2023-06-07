@@ -14,15 +14,8 @@ In this competition, we want to predict if a customer is satisfied or dissatisfi
 |高語謙|資碩一|111753130||
 |吳家瑋|資碩一|111753141||
 
-|顧以恩|統計三|109304033||
-|張翊鞍|統計四|108304004||
-|程至榮|資碩一|111753151||
-|高語謙|資碩一|111753130||
-|吳家瑋|資碩一|111753141||
-
-
 ## Quick start
-You might provide an example commend or few commends to reproduce your analysis, i.e., the following R script
+The following R script shows how to execute the best xgboost model we have experimented and output the result to your designate directory. We have put the source code in `/code/Final` directory, including the main.R (Best model) and other experiment source code (like PCA, data exploration, etc.). Feel free to checkit
 ```R
 Rscript code/Final/main.R --train data/Input/train.csv --test data/Input/test.csv --predict data/Output/submission.csv
 Rscript code/Final/main.R --train data/Input/train.csv --test data/Input/test.csv --predict data/Output/submission.csv
