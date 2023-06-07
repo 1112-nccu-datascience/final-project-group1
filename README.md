@@ -61,17 +61,18 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
     * remove constant features
   * create additional features
     * var38mc、logvar38、log_saldo_var30 
-  * remove outliers
-  * model tuning
-
   * data preprocessing
     * remove all zero features
     * remove identical features
     * remove constant features
   * create additional features
     * var38mc、logvar38、log_saldo_var30 
+  * create undersampling subdata
+    * Positve : negative = 1:1
+    * Positve : negative = 1:4
   * remove outliers
   * model tuning
+  * fit measurement
 
 * Which method or package do you use? 
   * original packages in the paper
