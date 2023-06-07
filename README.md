@@ -82,19 +82,24 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 
 ### results
 * What is a null model for comparison?
-  * Using xgboost without any modification as null model with 0.81 accuracy
+  * Guess all 0s or 1s
   * Using xgboost without any modification as null model with 0.81 accuracy
 * How do your perform evaluation?
   * Cross-validation : 10 fold in xgboost parameter
-  * or extra separated data
-  * Cross-validation : 10 fold in xgboost parameter
-  * or extra separated data
+  * Compute the Accuracy、Sensitivity and Specificity from confusion matrix
+  * Compute the AUROC and AUPRC from the predicted probability
+  * Private and public score on Kaggle late submission
 
 ## References
 * Packages you use
   * tidyverse: https://www.tidyverse.org/
   * xgboost: https://xgboost.readthedocs.io/en/stable/
   * caret: https://cran.r-project.org/web/packages/caret/index.html
+  * imimbalance: https://github.com/cran/imbalance/blob/master/R/imbalance.R
+  * PRROC: https://github.com/cran/PRROC
+  * pROC: https://github.com/cran/pROC
+  * ggplot2: https://www.rdocumentation.org/packages/ggplot2/versions/3.4.2
+  
 * Related publications 
   * Feature Explore: https://www.kaggle.com/code/cast42/exploring-features
   * Xgboost example https://www.kaggle.com/code/zfturbo/to-the-top-v3
