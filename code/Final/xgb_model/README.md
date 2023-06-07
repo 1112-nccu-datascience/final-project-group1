@@ -9,5 +9,8 @@ print(best_params)
 ```
 
 * xgb_V5_標記重要參數.R 
+可以看出哪些參數對 xgboost 訓練是重要的
 
+* xgb_ROSE_oversampling.R 
+實驗結果發現加入 Oversampling 的效果並不好，準確度掉到 0.5 左右
 
