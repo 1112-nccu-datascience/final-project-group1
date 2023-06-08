@@ -96,6 +96,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   * xgboost: https://xgboost.readthedocs.io/en/stable/
   * caret: https://cran.r-project.org/web/packages/caret/index.html
   * imimbalance: https://github.com/cran/imbalance/blob/master/R/imbalance.R
+  * unbalabced: https://github.com/dalpozz/unbalanced
   * PRROC: https://github.com/cran/PRROC
   * pROC: https://github.com/cran/pROC
   * ggplot2: https://www.rdocumentation.org/packages/ggplot2/versions/3.4.2
